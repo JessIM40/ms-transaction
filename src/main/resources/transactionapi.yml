@@ -1,0 +1,230 @@
+openapi: 3.0.3
+info:
+  title: Transaction Management Service
+  description: Microservice for transaction management at XYZ bank
+  version: 1.0.0
+servers:
+  - url: http://localhost:8087
+paths:
+  /transaction/deposit:
+    post:
+      tags:
+        - transaction
+      summary: Register a deposit
+      description: Register a deposit in a bank account
+      operationId: registerDeposit
+      requestBody:
+        description: Register transaction object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepositRequest'
+        required: true
+      responses:
+        '201':
+          description: Deposit registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepositRequest'
+        '400':
+          description: Error in input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /transaction/withdrawal:
+    post:
+      tags:
+        - withdrawal
+      summary: Register a withdrawal
+      description: Register a withdrawal from a bank account
+      operationId: registerWithdrawal
+      requestBody:
+        description: Register transaction object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WithdrawalRequest'
+        required: true
+      responses:
+        '201':
+          description: Withdrawal registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WithdrawalRequest'
+        '400':
+          description: Invalid application or insufficient balance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /transaction/transfer:
+    post:
+      tags:
+        - transfer
+      summary: Register a transfer
+      description: Register a transfer between two bank accounts
+      operationId: registerTransfer
+      requestBody:
+        description: Register transaction object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferRequest'
+        required: true
+      responses:
+        '201':
+          description: Transfer registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferRequest'
+        '400':
+          description: Invalid application or insufficient balance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /transaction/historial:
+    get:
+      tags:
+        - history
+      summary: Get history of transactions
+      description: Check the history of transactions made
+      operationId: getHistory
+      parameters:
+        - name: account
+          in: query
+          description: Account number to filter history
+          required: false
+          schema:
+            type: string
+        - name: startDate
+          in: query
+          description: Start date to filter transactions
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          description: End date to filter transactions
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        '201':
+          description: Transactions history successfully consulted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionList'
+        '400':
+          description: Invalid application
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    DepositRequest:
+      type: object
+      required:
+        - destinationAccount
+        - amount
+        - date
+      properties:
+        destinationAccount:
+          type: string
+          description: Account number where the deposit will be made
+          example: "1234-5678-9098-7654"
+        amount:
+          type: number
+          format: double
+          description: Amount to deposit
+          example: 100.00
+        date:
+          type: string
+          format: date-time
+          description: Transaction date
+          example: ''
+    WithdrawalRequest:
+      type: object
+      required:
+        - originAccount
+        - amount
+        - date
+      properties:
+        originAccount:
+          type: string
+          description: Account number from which the withdrawal will be made
+          example: "1234-5678-9098-7654"
+        amount:
+          type: number
+          format: double
+          description: Amount to withdrawal
+          example: 100.00
+        date:
+          type: string
+          format: date-time
+          description: Transaction date
+          example: ''
+    TransferRequest:
+      type: object
+      required:
+        - originAccount
+        - destinationAccount
+        - amount
+        - date
+      properties:
+        originAccount:
+          type: string
+          description: Account number from which the transfer originated
+          example: "1234-5678-9098-7654"
+        destinationAccount:
+          type: string
+          description: Transfer destination account number
+          example: "0987-6543-2345-6789"
+        amount:
+          type: number
+          format: double
+          description: Amount to transfer
+          example: 100.00
+        date:
+          type: string
+          format: date-time
+          description: Transaction date
+          example: ''
+    TransactionList:
+      type: array
+      items:
+        type: object
+        properties:
+          type:
+            type: string
+            description: Transaction Type (Deposit, Withdrawal, Transfer)
+          originAccount:
+            type: string
+            description: Source account number
+          destinationAccount:
+            type: string
+            description: Destination account number (if applicable)
+          amount:
+            type: number
+            format: double
+            description: Transaction amount
+          date:
+            type: string
+            format: date-time
+            description: Transaction date
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 400
+        message:
+          type: string
